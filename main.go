@@ -4,12 +4,17 @@ package main
 import (
 	"context"
 	"time"
-	"gorm.io/driver/sqlite"
+	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 	"fmt"
 	"net/http"
 	"log"
 )
+
+func getHelloWorld(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, "Hello, World!")
+}
 
 func CreateGormDatabase(dbfile string) (*gorm.DB, error) {
 	// Database setup
@@ -21,36 +26,35 @@ func CreateGormDatabase(dbfile string) (*gorm.DB, error) {
 	return db, nil
 }
 
-func AddAPIEndpoints(mux *http.ServeMux, db *gorm.DB) *http.ServeMux{
-
+func CreateAPIEndpoints(mux *http.ServeMux, db *gorm.DB) *http.ServeMux{
 	// Endpoints
 	mux.HandleFunc("GET /hello", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, "Hello, World!")
+		getHelloWorld(w, r, db)
 	})
+
 
 	return mux
 }
 
-func NewAPIHandlerMux(ctx context.Context, dbfile string) *http.ServeMux {
+func CreateAPIMux(ctx context.Context, dbfile string) *http.ServeMux {
 	db, err := CreateGormDatabase(dbfile)
 	if err != nil {
-		log.Fatal("Failed to create database.")
+		log.Fatalf("Failed to create database: %s", err.Error())
 	}
 
 	mux := http.NewServeMux()
 
-	AddAPIEndpoints(mux, db)
+	CreateAPIEndpoints(mux, db)
 
 	return mux
 
 }
 
 func CreateServer(ctx context.Context, dbfile string) *http.Server {
-
-	mux := NewAPIHandlerMux(ctx, dbfile)
+	mux := CreateAPIMux(ctx, dbfile)
 
 	srv := &http.Server{
+		Addr: 				":8080",
 		Handler: 			mux,
 		ReadHeaderTimeout:	200 * time.Millisecond,
 		ReadTimeout: 		1 * time.Second, 
@@ -65,4 +69,5 @@ func main() {
 	ctx := context.Background()
 
 	srv := CreateServer(ctx, "main.db")
+	log.Fatal(srv.ListenAndServe())
 }
