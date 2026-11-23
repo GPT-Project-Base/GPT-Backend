@@ -11,10 +11,13 @@ import (
 	"log"
 )
 
+// API calls
 func getHelloWorld(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, "Hello, World!")
 }
+
+
 
 func CreateGormDatabase(dbfile string) (*gorm.DB, error) {
 	// Database setup
