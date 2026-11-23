@@ -4,11 +4,10 @@ import (
 	"testing"
 	"net/http/httptest"
 	"net/http"
-	"context"
 )
 
 
-var mux = CreateAPIMux(context.Background(), "test.db")
+var mux = NewAPIServeMux()
 // var srv = httptest.NewServer(mux)
 
 func TestHelloWorldStatusCode(t *testing.T) {
