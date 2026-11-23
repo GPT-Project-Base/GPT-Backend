@@ -1,10 +1,14 @@
 package main
 
 import (
-	"fmt"
 	"testing"
+	"net/http/httptest"
+	"context"
 )
 
-func TestServerUp(t *testing.T) {
+
+var srv = httptest.NewServer(NewAPIHandlerMux(context.Background(), "test.db"))
+
+func TestHelloWorld(t *testing.T) {
 
 }

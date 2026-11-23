@@ -21,24 +21,34 @@ func CreateGormDatabase(dbfile string) (*gorm.DB, error) {
 	return db, nil
 }
 
-func CreateAPIEndpoints(mux *http.ServeMux, db *gorm.DB) {
+func AddAPIEndpoints(mux *http.ServeMux, db *gorm.DB) *http.ServeMux{
 
 	// Endpoints
-	mux.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("GET /hello", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, "Hello, World!")
 	})
+
+	return mux
 }
 
-func CreateServer(ctx context.Context) *http.Server {
-
-	db, err := CreateGormDatabase("main.db")
-	mux := http.NewServeMux()
-
-	CreateAPIEndpoints(mux, db)
-
+func NewAPIHandlerMux(ctx context.Context, dbfile string) *http.ServeMux {
+	db, err := CreateGormDatabase(dbfile)
 	if err != nil {
 		log.Fatal("Failed to create database.")
 	}
+
+	mux := http.NewServeMux()
+
+	AddAPIEndpoints(mux, db)
+
+	return mux
+
+}
+
+func CreateServer(ctx context.Context, dbfile string) *http.Server {
+
+	mux := NewAPIHandlerMux(ctx, dbfile)
 
 	srv := &http.Server{
 		Handler: 			mux,
@@ -54,6 +64,5 @@ func CreateServer(ctx context.Context) *http.Server {
 func main() {
 	ctx := context.Background()
 
-	srv := CreateServer(ctx)
-
+	srv := CreateServer(ctx, "main.db")
 }
